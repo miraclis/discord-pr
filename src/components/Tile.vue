@@ -50,7 +50,10 @@ defineEmits<{
 
   padding: 0;
 
-  border: 1px solid rgba(190, 169, 120, 0.8);
+  border:
+    1px solid
+    rgba(190, 169, 120, 0.8);
+
   border-radius: 10%;
 
   background:
@@ -62,35 +65,44 @@ defineEmits<{
     );
 
   box-shadow:
-    0 7px 0 #b7a47b,
-    0 12px 18px rgba(0, 0, 0, 0.38),
-    inset 1px 1px 1px rgba(255, 255, 255, 0.9);
+    0 6px 0 #b7a47b,
+    0 10px 16px rgba(0, 0, 0, 0.38);
 
   color: #111;
 
   cursor: pointer;
 
-  transform: translateY(0);
+  overflow: hidden;
+
+  /* Важливо:
+     тепер текст може масштабуватися
+     від ширини самої плитки */
+  container-type: inline-size;
 
   transition:
     transform 160ms ease,
     filter 160ms ease,
-    box-shadow 160ms ease,
-    opacity 160ms ease;
+    box-shadow 160ms ease;
 }
 
 .tile-face {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
 
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
-  gap: 8%;
+  gap: 5%;
 
-  padding: 10% 6%;
+  padding:
+    10%
+    7%
+    8%;
+
+  overflow: hidden;
 }
 
 .tile-icon {
@@ -98,51 +110,91 @@ defineEmits<{
   align-items: center;
   justify-content: center;
 
-  min-height: 42%;
+  width: 100%;
 
-  font-size: clamp(16px, 2.4vw, 34px);
-  line-height: 1;
-
-  font-weight: 900;
+  flex: 0 0 auto;
 
   color: var(--tile-accent);
 
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.5);
-}
+  /*
+    cqw = % від ширини САМОЇ плитки.
+    Тому іконка реально зменшується
+    разом із плиткою.
+  */
+  font-size: clamp(
+    11px,
+    30cqw,
+    32px
+  );
 
-.tile-label {
-  max-width: 100%;
-
-  font-size: clamp(6px, 0.8vw, 12px);
-  line-height: 1;
+  line-height: 0.9;
 
   font-weight: 900;
 
-  letter-spacing: 0.01em;
-
   text-align: center;
-  text-transform: uppercase;
 
   white-space: nowrap;
 }
 
-.tile:hover:not(:disabled) {
-  transform: translateY(-4px);
+.tile-label {
+  display: block;
 
-  box-shadow:
-    0 9px 0 #b7a47b,
-    0 16px 24px rgba(0, 0, 0, 0.45);
+  width: 100%;
+  max-width: 100%;
+
+  flex: 0 0 auto;
+
+  /*
+    Головний фікс написів.
+  */
+  font-size: clamp(
+    4px,
+    11cqw,
+    10px
+  );
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+  text-align: center;
+
+  letter-spacing: -0.02em;
+
+  color: #111;
+
+  white-space: normal;
+
+  overflow-wrap: anywhere;
+
+  /*
+    Не даємо назві вилізти
+    за нижню частину плитки.
+  */
+  max-height: 2em;
+
+  overflow: hidden;
+}
+
+/* ------------------------------
+   INTERACTION
+------------------------------ */
+
+.tile:hover:not(:disabled) {
+  transform:
+    translateY(-3px);
 }
 
 .tile.selected {
-  transform: translateY(-9px);
+  transform:
+    translateY(-7px);
 
   box-shadow:
-    0 8px 0 #b7a47b,
+    0 7px 0 #b7a47b,
     0 0 0 3px #14f195,
-    0 0 24px rgba(20, 241, 149, 0.55),
-    0 18px 26px rgba(0, 0, 0, 0.45);
+    0 0 22px
+      rgba(20, 241, 149, 0.5);
 }
 
 .tile.blocked {
@@ -153,22 +205,21 @@ defineEmits<{
   cursor: default;
 }
 
-.tile.blocked .tile-face {
-  opacity: 0.82;
-}
-
 .tile.hinted {
-  animation: hint-pulse 0.8s ease-in-out infinite alternate;
-
   box-shadow:
-    0 8px 0 #b7a47b,
+    0 7px 0 #b7a47b,
     0 0 0 3px #ffd84d,
-    0 0 30px rgba(255, 216, 77, 0.65);
+    0 0 26px
+      rgba(255, 216, 77, 0.6);
 }
 
 .tile:disabled {
   opacity: 1;
 }
+
+/* ------------------------------
+   COLORS
+------------------------------ */
 
 .tone-solana {
   --tile-accent: #6f45dd;
@@ -179,36 +230,26 @@ defineEmits<{
 }
 
 .tone-teal {
-  --tile-accent: #32a99c;
+  --tile-accent: #268d82;
 }
 
 .tone-gold {
-  --tile-accent: #d39027;
+  --tile-accent: #b47c20;
 }
 
 .tone-pink {
-  --tile-accent: #d33c98;
+  --tile-accent: #bd327f;
 }
 
 .tone-blue {
-  --tile-accent: #287eb7;
+  --tile-accent: #2474a8;
 }
 
 .tone-green {
-  --tile-accent: #47aa71;
+  --tile-accent: #378a5b;
 }
 
 .tone-orange {
-  --tile-accent: #d57936;
-}
-
-@keyframes hint-pulse {
-  from {
-    transform: translateY(-3px) scale(1);
-  }
-
-  to {
-    transform: translateY(-8px) scale(1.035);
-  }
+  --tile-accent: #bf652c;
 }
 </style>

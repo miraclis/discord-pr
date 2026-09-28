@@ -10,6 +10,8 @@ import Tile from './Tile.vue'
 import TopBar from './TopBar.vue'
 import BottomBar from './BottomBar.vue'
 
+
+
 import type {
   GameTile,
   MatchHistoryEntry,
@@ -39,6 +41,8 @@ type Panel = 'menu' | 'settings' | null
 // BRANDS
 // Кожен бренд використовується рівно як одна пара.
 // --------------------------------------------------
+
+
 
 const brands: Brand[] = [
   {
@@ -1378,20 +1382,10 @@ onBeforeUnmount(() => {
             v-for="tile in tiles"
             :key="tile.id"
             :tile="tile"
-            :selected="
-              selectedTileIds.includes(
-                tile.id
-              )
-            "
-            :hinted="
-              hintedTileIds.includes(
-                tile.id
-              )
-            "
+            :selected="selectedTileIds.includes(tile.id)"
+            :hinted="hintedTileIds.includes(tile.id)"
             :free="isTileFree(tile)"
-            :style="
-              getTileStyle(tile)
-            "
+            :style="getTileStyle(tile)"
             @select="selectTile(tile)"
           />
         </div>
@@ -1454,36 +1448,28 @@ onBeforeUnmount(() => {
           ×
         </button>
 
-        <template
-          v-if="panel === 'menu'"
-        >
+        <template v-if="panel === 'menu'">
           <h2>
             Solana Mahjong
           </h2>
 
           <p>
-            Match two identical free
-            tiles to clear the board.
+            Match two identical free tiles to clear the board.
           </p>
 
           <div class="rules">
             <div>
               <span>01</span>
-
-              A tile cannot have another
-              tile covering it.
+              A tile cannot have another tile covering it.
             </div>
 
             <div>
               <span>02</span>
-
-              At least one side must be
-              open.
+              At least one side must be open.
             </div>
 
             <div>
               <span>03</span>
-
               Match identical Web3 tiles.
             </div>
           </div>
@@ -1505,24 +1491,19 @@ onBeforeUnmount(() => {
           </button>
         </template>
 
-        <template
-          v-else
-        >
+        <template v-else>
           <h2>
             Settings
           </h2>
 
-          <label
-            class="setting-row"
-          >
+          <label class="setting-row">
             <div>
               <strong>
                 Reduce motion
               </strong>
 
               <small>
-                Disable most tile
-                animations.
+                Disable most tile animations.
               </small>
             </div>
 
