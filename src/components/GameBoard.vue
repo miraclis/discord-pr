@@ -23,13 +23,22 @@ interface Brand {
   tone: TileTone
 }
 
-interface TilePosition {
+interface BoardPosition {
+  id: number
   x: number
   y: number
   z: number
 }
 
+type RemovalPair = [number, number]
+
 type Panel = 'menu' | 'settings' | null
+
+
+// --------------------------------------------------
+// BRANDS
+// Кожен бренд використовується рівно як одна пара.
+// --------------------------------------------------
 
 const brands: Brand[] = [
   {
@@ -178,127 +187,455 @@ const brands: Brand[] = [
   }
 ]
 
-const pairPositions: Array<
-  [TilePosition, TilePosition]
+
+// --------------------------------------------------
+// BOARD GEOMETRY
+//
+// Це тільки координати.
+// Типів SOL / BONK / etc тут спеціально немає.
+//
+// Генератор сам визначить, які позиції повинні
+// утворювати пару, щоб поле можна було пройти.
+// --------------------------------------------------
+
+const rawPositions: Array<
+  [number, number, number]
 > = [
   // BASE LAYER
-  [
-    { x: 2, y: 4, z: 0 },
-    { x: 12, y: 4, z: 0 }
-  ],
-  [
-    { x: 4, y: 4, z: 0 },
-    { x: 10, y: 4, z: 0 }
-  ],
-  [
-    { x: 6, y: 4, z: 0 },
-    { x: 8, y: 4, z: 0 }
-  ],
 
-  [
-    { x: 0, y: 6, z: 0 },
-    { x: 14, y: 6, z: 0 }
-  ],
-  [
-    { x: 2, y: 6, z: 0 },
-    { x: 12, y: 6, z: 0 }
-  ],
-  [
-    { x: 4, y: 6, z: 0 },
-    { x: 10, y: 6, z: 0 }
-  ],
-  [
-    { x: 6, y: 6, z: 0 },
-    { x: 8, y: 6, z: 0 }
-  ],
+  [2, 4, 0],
+  [12, 4, 0],
 
-  [
-    { x: 0, y: 8, z: 0 },
-    { x: 14, y: 8, z: 0 }
-  ],
-  [
-    { x: 2, y: 8, z: 0 },
-    { x: 12, y: 8, z: 0 }
-  ],
-  [
-    { x: 4, y: 8, z: 0 },
-    { x: 10, y: 8, z: 0 }
-  ],
-  [
-    { x: 6, y: 8, z: 0 },
-    { x: 8, y: 8, z: 0 }
-  ],
+  [4, 4, 0],
+  [10, 4, 0],
 
-  [
-    { x: 2, y: 10, z: 0 },
-    { x: 12, y: 10, z: 0 }
-  ],
-  [
-    { x: 4, y: 10, z: 0 },
-    { x: 10, y: 10, z: 0 }
-  ],
-  [
-    { x: 6, y: 10, z: 0 },
-    { x: 8, y: 10, z: 0 }
-  ],
+  [6, 4, 0],
+  [8, 4, 0],
+
+  [0, 6, 0],
+  [14, 6, 0],
+
+  [2, 6, 0],
+  [12, 6, 0],
+
+  [4, 6, 0],
+  [10, 6, 0],
+
+  [6, 6, 0],
+  [8, 6, 0],
+
+  [0, 8, 0],
+  [14, 8, 0],
+
+  [2, 8, 0],
+  [12, 8, 0],
+
+  [4, 8, 0],
+  [10, 8, 0],
+
+  [6, 8, 0],
+  [8, 8, 0],
+
+  [2, 10, 0],
+  [12, 10, 0],
+
+  [4, 10, 0],
+  [10, 10, 0],
+
+  [6, 10, 0],
+  [8, 10, 0],
+
 
   // SECOND LAYER
-  [
-    { x: 3, y: 5, z: 1 },
-    { x: 13, y: 5, z: 1 }
-  ],
-  [
-    { x: 5, y: 5, z: 1 },
-    { x: 11, y: 5, z: 1 }
-  ],
-  [
-    { x: 7, y: 5, z: 1 },
-    { x: 9, y: 5, z: 1 }
-  ],
 
-  [
-    { x: 3, y: 7, z: 1 },
-    { x: 13, y: 7, z: 1 }
-  ],
-  [
-    { x: 5, y: 7, z: 1 },
-    { x: 11, y: 7, z: 1 }
-  ],
-  [
-    { x: 7, y: 7, z: 1 },
-    { x: 9, y: 7, z: 1 }
-  ],
+  [3, 5, 1],
+  [13, 5, 1],
+
+  [5, 5, 1],
+  [11, 5, 1],
+
+  [7, 5, 1],
+  [9, 5, 1],
+
+  [3, 7, 1],
+  [13, 7, 1],
+
+  [5, 7, 1],
+  [11, 7, 1],
+
+  [7, 7, 1],
+  [9, 7, 1],
+
 
   // TOP LAYER
-  [
-    { x: 6, y: 4, z: 2 },
-    { x: 12, y: 4, z: 2 }
-  ],
-  [
-    { x: 8, y: 4, z: 2 },
-    { x: 10, y: 4, z: 2 }
-  ],
-  [
-    { x: 7, y: 6, z: 2 },
-    { x: 13, y: 6, z: 2 }
-  ],
-  [
-    { x: 9, y: 6, z: 2 },
-    { x: 11, y: 6, z: 2 }
-  ]
+
+  [6, 4, 2],
+  [12, 4, 2],
+
+  [8, 4, 2],
+  [10, 4, 2],
+
+  [7, 6, 2],
+  [13, 6, 2],
+
+  [9, 6, 2],
+  [11, 6, 2]
 ]
 
-function createInitialTiles(): GameTile[] {
-  const result: GameTile[] = []
 
-  let id = 1
+const boardPositions: BoardPosition[] =
+  rawPositions.map(
+    ([x, y, z], index) => ({
+      id: index + 1,
+      x,
+      y,
+      z
+    })
+  )
 
-  pairPositions.forEach((positions, index) => {
-    const brand = brands[index]
 
-    positions.forEach(position => {
-      result.push({
-        id,
+// --------------------------------------------------
+// RANDOM
+// --------------------------------------------------
+
+function shuffleArray<T>(
+  source: T[]
+): T[] {
+  const result = [...source]
+
+  for (
+    let index = result.length - 1;
+    index > 0;
+    index--
+  ) {
+    const randomIndex =
+      Math.floor(
+        Math.random() *
+        (index + 1)
+      )
+
+    const temporary =
+      result[index]
+
+    result[index] =
+      result[randomIndex]
+
+    result[randomIndex] =
+      temporary
+  }
+
+  return result
+}
+
+
+// --------------------------------------------------
+// GEOMETRY
+// --------------------------------------------------
+
+function rectanglesOverlap(
+  first: BoardPosition,
+  second: BoardPosition
+): boolean {
+  const firstLeft =
+    first.x
+
+  const firstRight =
+    first.x + 2
+
+  const firstTop =
+    first.y
+
+  const firstBottom =
+    first.y + 2
+
+
+  const secondLeft =
+    second.x
+
+  const secondRight =
+    second.x + 2
+
+  const secondTop =
+    second.y
+
+  const secondBottom =
+    second.y + 2
+
+
+  return (
+    firstLeft < secondRight &&
+    firstRight > secondLeft &&
+    firstTop < secondBottom &&
+    firstBottom > secondTop
+  )
+}
+
+
+function verticalOverlap(
+  first: BoardPosition,
+  second: BoardPosition
+): boolean {
+  return (
+    first.y < second.y + 2 &&
+    first.y + 2 > second.y
+  )
+}
+
+
+// --------------------------------------------------
+// CHECK IF POSITION IS FREE
+// --------------------------------------------------
+
+function isPositionFree(
+  tile: BoardPosition,
+  activeTiles: BoardPosition[]
+): boolean {
+  // Плитка зверху перекриває цю плитку.
+
+  const hasTileAbove =
+    activeTiles.some(other =>
+      other.id !== tile.id &&
+      other.z > tile.z &&
+      rectanglesOverlap(
+        tile,
+        other
+      )
+    )
+
+  if (hasTileAbove) {
+    return false
+  }
+
+
+  // Перевіряємо ліву сторону.
+
+  const blockedOnLeft =
+    activeTiles.some(other =>
+      other.id !== tile.id &&
+      other.z === tile.z &&
+      other.x + 2 === tile.x &&
+      verticalOverlap(
+        tile,
+        other
+      )
+    )
+
+
+  // Перевіряємо праву сторону.
+
+  const blockedOnRight =
+    activeTiles.some(other =>
+      other.id !== tile.id &&
+      other.z === tile.z &&
+      tile.x + 2 === other.x &&
+      verticalOverlap(
+        tile,
+        other
+      )
+    )
+
+
+  // Mahjong:
+  // плитка доступна, якщо хоча б одна сторона вільна.
+
+  return (
+    !blockedOnLeft ||
+    !blockedOnRight
+  )
+}
+
+
+// --------------------------------------------------
+// GUARANTEED SOLUTION GENERATOR
+//
+// Спочатку ми вирішуємо ПУСТУ геометрію.
+//
+// Тобто визначаємо:
+// "які дві позиції можна прибрати першими?",
+// потім наступні дві,
+// і так поки поле не стане пустим.
+//
+// Потім тільки роздаємо бренди цим парам.
+// --------------------------------------------------
+
+function findRemovalPlan(
+  sourcePositions: BoardPosition[]
+): RemovalPair[] | null {
+  const remaining =
+    sourcePositions.map(
+      position => ({
+        ...position
+      })
+    )
+
+  const plan: RemovalPair[] = []
+
+  while (
+    remaining.length > 0
+  ) {
+    const freeTiles =
+      remaining.filter(tile =>
+        isPositionFree(
+          tile,
+          remaining
+        )
+      )
+
+    // Якщо залишились плитки,
+    // але нема хоча б двох доступних —
+    // сама геометрія неправильна.
+
+    if (
+      freeTiles.length < 2
+    ) {
+      return null
+    }
+
+
+    const first =
+      freeTiles[0]
+
+    const second =
+      freeTiles[1]
+
+
+    plan.push([
+      first.id,
+      second.id
+    ])
+
+
+    const firstIndex =
+      remaining.findIndex(
+        tile =>
+          tile.id === first.id
+      )
+
+    if (
+      firstIndex !== -1
+    ) {
+      remaining.splice(
+        firstIndex,
+        1
+      )
+    }
+
+
+    const secondIndex =
+      remaining.findIndex(
+        tile =>
+          tile.id === second.id
+      )
+
+    if (
+      secondIndex !== -1
+    ) {
+      remaining.splice(
+        secondIndex,
+        1
+      )
+    }
+  }
+
+  return plan
+}
+
+
+// --------------------------------------------------
+// ASSIGN BRANDS TO A GUARANTEED REMOVAL PLAN
+// --------------------------------------------------
+
+function createBrandMap(
+  positions: BoardPosition[]
+): Map<number, Brand> {
+  const solution =
+    findRemovalPlan(
+      positions
+    )
+
+  if (!solution) {
+    throw new Error(
+      'Board geometry is not solvable.'
+    )
+  }
+
+
+  if (
+    solution.length >
+    brands.length
+  ) {
+    throw new Error(
+      'Not enough brands for the number of tile pairs.'
+    )
+  }
+
+
+  const randomizedBrands =
+    shuffleArray(brands)
+      .slice(
+        0,
+        solution.length
+      )
+
+
+  const result =
+    new Map<number, Brand>()
+
+
+  solution.forEach(
+    (
+      [firstId, secondId],
+      index
+    ) => {
+      const brand =
+        randomizedBrands[index]
+
+      result.set(
+        firstId,
+        brand
+      )
+
+      result.set(
+        secondId,
+        brand
+      )
+    }
+  )
+
+
+  return result
+}
+
+
+// --------------------------------------------------
+// CREATE NEW GAME
+// --------------------------------------------------
+
+function createInitialTiles():
+  GameTile[] {
+  const brandMap =
+    createBrandMap(
+      boardPositions
+    )
+
+
+  return boardPositions.map(
+    position => {
+      const brand =
+        brandMap.get(
+          position.id
+        )
+
+      if (!brand) {
+        throw new Error(
+          `Missing brand for tile ${position.id}`
+        )
+      }
+
+
+      return {
+        id: position.id,
+
         type: brand.type,
         label: brand.label,
         symbol: brand.symbol,
@@ -309,135 +646,174 @@ function createInitialTiles(): GameTile[] {
         z: position.z,
 
         removed: false
-      })
+      }
+    }
+  )
+}
 
-      id++
-    })
+
+// --------------------------------------------------
+// STATE
+// --------------------------------------------------
+
+const tiles =
+  ref<GameTile[]>(
+    createInitialTiles()
+  )
+
+const selectedTileIds =
+  ref<number[]>([])
+
+const hintedTileIds =
+  ref<number[]>([])
+
+const score =
+  ref(0)
+
+const elapsedSeconds =
+  ref(0)
+
+const hintsLeft =
+  ref(3)
+
+const shufflesLeft =
+  ref(3)
+
+const history =
+  ref<MatchHistoryEntry[]>([])
+
+const panel =
+  ref<Panel>(null)
+
+const reducedMotion =
+  ref(false)
+
+const boardLocked =
+  ref(false)
+
+
+let timerId:
+  number | undefined
+
+let selectionTimeoutId:
+  number | undefined
+
+let hintTimeoutId:
+  number | undefined
+
+
+// --------------------------------------------------
+// COMPUTED
+// --------------------------------------------------
+
+const activeTiles =
+  computed(() =>
+    tiles.value.filter(
+      tile =>
+        !tile.removed
+    )
+  )
+
+
+const pairsLeft =
+  computed(() =>
+    activeTiles.value.length / 2
+  )
+
+
+const isCompleted =
+  computed(() =>
+    activeTiles.value.length === 0
+  )
+
+
+const canUndo =
+  computed(() =>
+    history.value.length > 0
+  )
+
+
+const formattedTime =
+  computed(() => {
+    const minutes =
+      Math.floor(
+        elapsedSeconds.value /
+        60
+      )
+
+    const seconds =
+      elapsedSeconds.value %
+      60
+
+
+    return `${
+      String(minutes)
+        .padStart(
+          2,
+          '0'
+        )
+    }:${
+      String(seconds)
+        .padStart(
+          2,
+          '0'
+        )
+    }`
   })
 
-  return result
-}
 
-const tiles = ref<GameTile[]>(createInitialTiles())
+// --------------------------------------------------
+// CURRENT GAME FREE CHECK
+// --------------------------------------------------
 
-const selectedTileIds = ref<number[]>([])
-const hintedTileIds = ref<number[]>([])
-
-const score = ref(0)
-const elapsedSeconds = ref(0)
-
-const hintsLeft = ref(3)
-const shufflesLeft = ref(3)
-
-const history = ref<MatchHistoryEntry[]>([])
-
-const panel = ref<Panel>(null)
-
-const reducedMotion = ref(false)
-
-const boardLocked = ref(false)
-
-let timerId: number | undefined
-let selectionTimeoutId: number | undefined
-let hintTimeoutId: number | undefined
-
-const activeTiles = computed(() =>
-  tiles.value.filter(tile => !tile.removed)
-)
-
-const pairsLeft = computed(() =>
-  activeTiles.value.length / 2
-)
-
-const isCompleted = computed(() =>
-  activeTiles.value.length === 0
-)
-
-const canUndo = computed(() =>
-  history.value.length > 0
-)
-
-const formattedTime = computed(() => {
-  const minutes = Math.floor(
-    elapsedSeconds.value / 60
-  )
-
-  const seconds =
-    elapsedSeconds.value % 60
-
-  return `${String(minutes).padStart(2, '0')}:${String(
-    seconds
-  ).padStart(2, '0')}`
-})
-
-function rectanglesOverlap(
-  first: GameTile,
-  second: GameTile
-) {
-  const firstLeft = first.x
-  const firstRight = first.x + 2
-  const firstTop = first.y
-  const firstBottom = first.y + 2
-
-  const secondLeft = second.x
-  const secondRight = second.x + 2
-  const secondTop = second.y
-  const secondBottom = second.y + 2
-
-  return (
-    firstLeft < secondRight &&
-    firstRight > secondLeft &&
-    firstTop < secondBottom &&
-    firstBottom > secondTop
-  )
-}
-
-function verticalOverlap(
-  first: GameTile,
-  second: GameTile
-) {
-  return (
-    first.y < second.y + 2 &&
-    first.y + 2 > second.y
-  )
-}
-
-function isTileFree(tile: GameTile): boolean {
-  if (tile.removed) {
+function isTileFree(
+  tile: GameTile
+): boolean {
+  if (
+    tile.removed
+  ) {
     return false
   }
 
-  const hasTileAbove = tiles.value.some(other =>
-    !other.removed &&
-    other.id !== tile.id &&
-    other.z > tile.z &&
-    rectanglesOverlap(tile, other)
+
+  const positions:
+    BoardPosition[] =
+    activeTiles.value.map(
+      activeTile => ({
+        id:
+          activeTile.id,
+
+        x:
+          activeTile.x,
+
+        y:
+          activeTile.y,
+
+        z:
+          activeTile.z
+      })
+    )
+
+
+  return isPositionFree(
+    {
+      id: tile.id,
+      x: tile.x,
+      y: tile.y,
+      z: tile.z
+    },
+    positions
   )
-
-  if (hasTileAbove) {
-    return false
-  }
-
-  const blockedOnLeft = tiles.value.some(other =>
-    !other.removed &&
-    other.id !== tile.id &&
-    other.z === tile.z &&
-    other.x + 2 === tile.x &&
-    verticalOverlap(tile, other)
-  )
-
-  const blockedOnRight = tiles.value.some(other =>
-    !other.removed &&
-    other.id !== tile.id &&
-    other.z === tile.z &&
-    tile.x + 2 === other.x &&
-    verticalOverlap(tile, other)
-  )
-
-  return !blockedOnLeft || !blockedOnRight
 }
 
-function getTileStyle(tile: GameTile) {
+
+// --------------------------------------------------
+// STYLE POSITION
+// --------------------------------------------------
+
+function getTileStyle(
+  tile: GameTile
+) {
   return {
     left: `${
       4 +
@@ -448,7 +824,7 @@ function getTileStyle(tile: GameTile) {
     top: `${
       2 +
       tile.y * 7.25 -
-      tile.z * 1
+      tile.z
     }%`,
 
     zIndex:
@@ -458,23 +834,48 @@ function getTileStyle(tile: GameTile) {
   }
 }
 
-function clearSelectionTimer() {
-  if (selectionTimeoutId !== undefined) {
-    window.clearTimeout(selectionTimeoutId)
 
-    selectionTimeoutId = undefined
+// --------------------------------------------------
+// TIMERS
+// --------------------------------------------------
+
+function clearSelectionTimer() {
+  if (
+    selectionTimeoutId !==
+    undefined
+  ) {
+    window.clearTimeout(
+      selectionTimeoutId
+    )
+
+    selectionTimeoutId =
+      undefined
   }
 }
+
 
 function clearHintTimer() {
-  if (hintTimeoutId !== undefined) {
-    window.clearTimeout(hintTimeoutId)
+  if (
+    hintTimeoutId !==
+    undefined
+  ) {
+    window.clearTimeout(
+      hintTimeoutId
+    )
 
-    hintTimeoutId = undefined
+    hintTimeoutId =
+      undefined
   }
 }
 
-function selectTile(tile: GameTile) {
+
+// --------------------------------------------------
+// SELECT TILE
+// --------------------------------------------------
+
+function selectTile(
+  tile: GameTile
+) {
   if (
     boardLocked.value ||
     !isTileFree(tile)
@@ -482,24 +883,40 @@ function selectTile(tile: GameTile) {
     return
   }
 
+
+  // Натиснули вдруге на ту саму плитку.
+
   if (
-    selectedTileIds.value.includes(tile.id)
+    selectedTileIds.value.includes(
+      tile.id
+    )
   ) {
     selectedTileIds.value = []
 
     return
   }
 
-  if (selectedTileIds.value.length === 0) {
-    selectedTileIds.value = [tile.id]
+
+  // Перша плитка.
+
+  if (
+    selectedTileIds.value.length === 0
+  ) {
+    selectedTileIds.value = [
+      tile.id
+    ]
 
     return
   }
 
-  const firstTile = tiles.value.find(
-    item =>
-      item.id === selectedTileIds.value[0]
-  )
+
+  const firstTile =
+    tiles.value.find(
+      item =>
+        item.id ===
+        selectedTileIds.value[0]
+    )
+
 
   if (!firstTile) {
     selectedTileIds.value = []
@@ -507,75 +924,145 @@ function selectTile(tile: GameTile) {
     return
   }
 
+
   selectedTileIds.value = [
     firstTile.id,
     tile.id
   ]
 
-  boardLocked.value = true
 
-  if (firstTile.type === tile.type) {
-    const scoreBefore = score.value
+  boardLocked.value =
+    true
+
+
+  // ------------------------------------------------
+  // MATCH
+  // ------------------------------------------------
+
+  if (
+    firstTile.type ===
+    tile.type
+  ) {
+    const scoreBefore =
+      score.value
+
 
     selectionTimeoutId =
-      window.setTimeout(() => {
-        history.value.push({
-          tileIds: [
-            firstTile.id,
-            tile.id
-          ],
-          scoreBefore
-        })
+      window.setTimeout(
+        () => {
+          history.value.push({
+            tileIds: [
+              firstTile.id,
+              tile.id
+            ],
 
-        firstTile.removed = true
-        tile.removed = true
+            scoreBefore
+          })
 
-        score.value += 100
 
-        selectedTileIds.value = []
-        hintedTileIds.value = []
+          firstTile.removed =
+            true
 
-        boardLocked.value = false
-      }, 180)
+          tile.removed =
+            true
+
+
+          score.value +=
+            100
+
+
+          selectedTileIds.value =
+            []
+
+          hintedTileIds.value =
+            []
+
+
+          boardLocked.value =
+            false
+        },
+        180
+      )
+
 
     return
   }
 
-  selectionTimeoutId =
-    window.setTimeout(() => {
-      selectedTileIds.value = []
 
-      boardLocked.value = false
-    }, 450)
+  // ------------------------------------------------
+  // WRONG PAIR
+  // ------------------------------------------------
+
+  selectionTimeoutId =
+    window.setTimeout(
+      () => {
+        selectedTileIds.value =
+          []
+
+        boardLocked.value =
+          false
+      },
+      450
+    )
 }
+
+
+// --------------------------------------------------
+// FIND AVAILABLE MATCH
+// --------------------------------------------------
 
 function findFreePair():
   [GameTile, GameTile] | null {
-  const freeTiles = tiles.value.filter(
-    tile => isTileFree(tile)
-  )
+  const freeTiles =
+    tiles.value.filter(
+      tile =>
+        !tile.removed &&
+        isTileFree(tile)
+    )
+
 
   for (
     let firstIndex = 0;
-    firstIndex < freeTiles.length;
+    firstIndex <
+    freeTiles.length;
     firstIndex++
   ) {
     for (
-      let secondIndex = firstIndex + 1;
-      secondIndex < freeTiles.length;
+      let secondIndex =
+        firstIndex + 1;
+
+      secondIndex <
+      freeTiles.length;
+
       secondIndex++
     ) {
-      const first = freeTiles[firstIndex]
-      const second = freeTiles[secondIndex]
+      const first =
+        freeTiles[firstIndex]
 
-      if (first.type === second.type) {
-        return [first, second]
+      const second =
+        freeTiles[secondIndex]
+
+
+      if (
+        first.type ===
+        second.type
+      ) {
+        return [
+          first,
+          second
+        ]
       }
     }
   }
 
+
   return null
 }
+
+
+// --------------------------------------------------
+// HINT
+// --------------------------------------------------
 
 function useHint() {
   if (
@@ -585,253 +1072,270 @@ function useHint() {
     return
   }
 
-  const pair = findFreePair()
+
+  const pair =
+    findFreePair()
+
+
+  // З нормальною генерацією сюди
+  // практично не повинні потрапляти.
 
   if (!pair) {
     return
   }
 
+
   clearHintTimer()
+
 
   hintedTileIds.value = [
     pair[0].id,
     pair[1].id
   ]
 
+
   hintsLeft.value--
 
+
   hintTimeoutId =
-    window.setTimeout(() => {
-      hintedTileIds.value = []
-    }, 1600)
-}
-
-function shuffleArray<T>(items: T[]): T[] {
-  const result = [...items]
-
-  for (
-    let index = result.length - 1;
-    index > 0;
-    index--
-  ) {
-    const randomIndex = Math.floor(
-      Math.random() * (index + 1)
+    window.setTimeout(
+      () => {
+        hintedTileIds.value =
+          []
+      },
+      1600
     )
-
-    ;[
-      result[index],
-      result[randomIndex]
-    ] = [
-      result[randomIndex],
-      result[index]
-    ]
-  }
-
-  return result
 }
+
+
+// --------------------------------------------------
+// GUARANTEED SHUFFLE
+//
+// Тут ми НЕ перемішуємо типи просто випадково.
+//
+// Спочатку знаходимо новий guaranteed removal plan
+// для плиток, які ще залишилися.
+//
+// Потім роздаємо бренди по ньому.
+// --------------------------------------------------
 
 function shuffleTiles() {
   if (
     shufflesLeft.value <= 0 ||
-    isCompleted.value
+    isCompleted.value ||
+    boardLocked.value
   ) {
     return
   }
 
-  selectedTileIds.value = []
-  hintedTileIds.value = []
 
-  const active =
-    tiles.value.filter(
-      tile => !tile.removed
-    )
-
-  const free =
-    active.filter(tile =>
-      isTileFree(tile)
-    )
-
-  if (active.length < 2) {
-    return
-  }
-
-  const faces = active.map(tile => ({
-    type: tile.type,
-    label: tile.label,
-    symbol: tile.symbol,
-    tone: tile.tone
-  }))
-
-  const grouped =
-    new Map<
-      string,
-      typeof faces
-    >()
-
-  faces.forEach(face => {
-    const group =
-      grouped.get(face.type) ?? []
-
-    group.push(face)
-
-    grouped.set(face.type, group)
-  })
-
-  const availablePairs =
-    [...grouped.values()].filter(
-      group => group.length >= 2
-    )
-
-  if (
-    free.length >= 2 &&
-    availablePairs.length > 0
-  ) {
-    const randomPair =
-      availablePairs[
-        Math.floor(
-          Math.random() *
-          availablePairs.length
-        )
-      ]
-
-    const chosenType =
-      randomPair[0].type
-
-    let removedFaces = 0
-
-    const remainingFaces =
-      faces.filter(face => {
-        if (
-          face.type === chosenType &&
-          removedFaces < 2
-        ) {
-          removedFaces++
-
-          return false
-        }
-
-        return true
-      })
-
-    const shuffledRest =
-      shuffleArray(remainingFaces)
-
-    Object.assign(
-      free[0],
-      randomPair[0]
-    )
-
-    Object.assign(
-      free[1],
-      randomPair[1]
-    )
-
-    const freeIds =
-      new Set([
-        free[0].id,
-        free[1].id
-      ])
-
-    const otherTiles =
-      active.filter(
+  const remainingPositions:
+    BoardPosition[] =
+    tiles.value
+      .filter(
         tile =>
-          !freeIds.has(tile.id)
+          !tile.removed
+      )
+      .map(
+        tile => ({
+          id:
+            tile.id,
+
+          x:
+            tile.x,
+
+          y:
+            tile.y,
+
+          z:
+            tile.z
+        })
       )
 
-    otherTiles.forEach(
-      (tile, index) => {
-        Object.assign(
-          tile,
-          shuffledRest[index]
-        )
-      }
-    )
-  } else {
-    const shuffled =
-      shuffleArray(faces)
 
-    active.forEach(
-      (tile, index) => {
-        Object.assign(
-          tile,
-          shuffled[index]
-        )
-      }
+  const newBrandMap =
+    createBrandMap(
+      remainingPositions
     )
-  }
+
+
+  tiles.value.forEach(
+    tile => {
+      if (
+        tile.removed
+      ) {
+        return
+      }
+
+
+      const brand =
+        newBrandMap.get(
+          tile.id
+        )
+
+
+      if (!brand) {
+        return
+      }
+
+
+      tile.type =
+        brand.type
+
+      tile.label =
+        brand.label
+
+      tile.symbol =
+        brand.symbol
+
+      tile.tone =
+        brand.tone
+    }
+  )
+
+
+  selectedTileIds.value =
+    []
+
+  hintedTileIds.value =
+    []
+
+
+  // Undo через shuffle не робимо.
+  // Старі ходи належать старій розкладці.
+
+  history.value =
+    []
+
 
   shufflesLeft.value--
 }
+
+
+// --------------------------------------------------
+// UNDO
+// --------------------------------------------------
 
 function undoLastMove() {
   const last =
     history.value.pop()
 
+
   if (!last) {
     return
   }
 
+
   clearSelectionTimer()
 
-  last.tileIds.forEach(id => {
-    const tile =
-      tiles.value.find(
-        item => item.id === id
-      )
 
-    if (tile) {
-      tile.removed = false
+  last.tileIds.forEach(
+    id => {
+      const tile =
+        tiles.value.find(
+          item =>
+            item.id === id
+        )
+
+
+      if (tile) {
+        tile.removed =
+          false
+      }
     }
-  })
+  )
+
 
   score.value =
     last.scoreBefore
 
-  selectedTileIds.value = []
-  hintedTileIds.value = []
 
-  boardLocked.value = false
+  selectedTileIds.value =
+    []
+
+  hintedTileIds.value =
+    []
+
+  boardLocked.value =
+    false
 }
+
+
+// --------------------------------------------------
+// RESET
+// --------------------------------------------------
 
 function resetGame() {
   clearSelectionTimer()
   clearHintTimer()
 
+
   tiles.value =
     createInitialTiles()
 
-  selectedTileIds.value = []
-  hintedTileIds.value = []
 
-  score.value = 0
-  elapsedSeconds.value = 0
+  selectedTileIds.value =
+    []
 
-  hintsLeft.value = 3
-  shufflesLeft.value = 3
+  hintedTileIds.value =
+    []
 
-  history.value = []
 
-  boardLocked.value = false
+  score.value =
+    0
 
-  panel.value = null
+  elapsedSeconds.value =
+    0
+
+
+  hintsLeft.value =
+    3
+
+  shufflesLeft.value =
+    3
+
+
+  history.value =
+    []
+
+
+  boardLocked.value =
+    false
+
+  panel.value =
+    null
 }
+
+
+// --------------------------------------------------
+// TIMER
+// --------------------------------------------------
 
 onMounted(() => {
   timerId =
-    window.setInterval(() => {
-      if (
-        !isCompleted.value &&
-        panel.value === null
-      ) {
-        elapsedSeconds.value++
-      }
-    }, 1000)
+    window.setInterval(
+      () => {
+        if (
+          !isCompleted.value &&
+          panel.value === null
+        ) {
+          elapsedSeconds.value++
+        }
+      },
+      1000
+    )
 })
 
+
 onBeforeUnmount(() => {
-  if (timerId !== undefined) {
-    window.clearInterval(timerId)
+  if (
+    timerId !== undefined
+  ) {
+    window.clearInterval(
+      timerId
+    )
   }
+
 
   clearSelectionTimer()
   clearHintTimer()
