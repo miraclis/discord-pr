@@ -36,7 +36,7 @@ const emit = defineEmits<{
         </div>
 
         <span class="brand-name">
-          Solana Mahjong
+          Solong
         </span>
       </div>
     </div>

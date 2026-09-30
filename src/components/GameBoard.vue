@@ -9,21 +9,27 @@ import {
 import Tile from './Tile.vue'
 import TopBar from './TopBar.vue'
 import BottomBar from './BottomBar.vue'
+import KnowledgeCard from './KnowledgeCard.vue'
 
+import {
+  KNOWLEDGE_BY_TYPE,
+  KNOWLEDGE_ITEMS,
+  KNOWLEDGE_TOTAL
+} from '../data/knowledge'
 
+import type {
+  KnowledgeItem
+} from '../data/knowledge'
 
 import type {
   GameTile,
-  MatchHistoryEntry,
-  TileTone
+  MatchHistoryEntry
 } from '../types/game'
 
-interface Brand {
-  type: string
-  label: string
-  symbol: string
-  tone: TileTone
-}
+type Brand = Pick<
+  KnowledgeItem,
+  'type' | 'label' | 'symbol' | 'tone'
+>
 
 interface BoardPosition {
   id: number
@@ -34,172 +40,25 @@ interface BoardPosition {
 
 type RemovalPair = [number, number]
 
-type Panel = 'menu' | 'settings' | null
-
+type Panel =
+  | 'menu'
+  | 'settings'
+  | null
 
 // --------------------------------------------------
-// BRANDS
-// Кожен бренд використовується рівно як одна пара.
+// TILE DATA
 // --------------------------------------------------
 
-
-
-const brands: Brand[] = [
-  {
-    type: 'SOL',
-    label: 'Solana',
-    symbol: '≋',
-    tone: 'solana'
-  },
-  {
-    type: 'PHANTOM',
-    label: 'Phantom',
-    symbol: '●',
-    tone: 'purple'
-  },
-  {
-    type: 'JUPITER',
-    label: 'Jupiter',
-    symbol: 'JUP',
-    tone: 'teal'
-  },
-  {
-    type: 'BONK',
-    label: 'Bonk',
-    symbol: 'B',
-    tone: 'orange'
-  },
-  {
-    type: 'RAYDIUM',
-    label: 'Raydium',
-    symbol: 'R',
-    tone: 'purple'
-  },
-  {
-    type: 'ORCA',
-    label: 'Orca',
-    symbol: '◒',
-    tone: 'gold'
-  },
-  {
-    type: 'JITO',
-    label: 'Jito',
-    symbol: 'J',
-    tone: 'teal'
-  },
-  {
-    type: 'PYTH',
-    label: 'Pyth',
-    symbol: 'P',
-    tone: 'purple'
-  },
-  {
-    type: 'TENSOR',
-    label: 'Tensor',
-    symbol: '↑',
-    tone: 'blue'
-  },
-  {
-    type: 'MAGIC_EDEN',
-    label: 'Magic Eden',
-    symbol: 'MΞ',
-    tone: 'pink'
-  },
-  {
-    type: 'DRIFT',
-    label: 'Drift',
-    symbol: 'D',
-    tone: 'purple'
-  },
-  {
-    type: 'HELIUS',
-    label: 'Helius',
-    symbol: '☀',
-    tone: 'orange'
-  },
-  {
-    type: 'MARGINFI',
-    label: 'MarginFi',
-    symbol: 'M',
-    tone: 'blue'
-  },
-  {
-    type: 'METAPLEX',
-    label: 'Metaplex',
-    symbol: 'M',
-    tone: 'purple'
-  },
-  {
-    type: 'WORMHOLE',
-    label: 'Wormhole',
-    symbol: '◎',
-    tone: 'blue'
-  },
-  {
-    type: 'VALIDATOR',
-    label: 'Validator',
-    symbol: '▤',
-    tone: 'purple'
-  },
-  {
-    type: 'PORTAL',
-    label: 'Portal',
-    symbol: '◉',
-    tone: 'purple'
-  },
-  {
-    type: 'SERUM',
-    label: 'Serum',
-    symbol: '◍',
-    tone: 'teal'
-  },
-  {
-    type: 'SQUADS',
-    label: 'Squads',
-    symbol: 'SQ',
-    tone: 'green'
-  },
-  {
-    type: 'MARINADE',
-    label: 'Marinade',
-    symbol: 'M',
-    tone: 'green'
-  },
-  {
-    type: 'BACKPACK',
-    label: 'Backpack',
-    symbol: 'BP',
-    tone: 'purple'
-  },
-  {
-    type: 'STAR_ATLAS',
-    label: 'Star Atlas',
-    symbol: 'A',
-    tone: 'blue'
-  },
-  {
-    type: 'STEP',
-    label: 'Step',
-    symbol: 'S',
-    tone: 'green'
-  },
-  {
-    type: 'SAFE',
-    label: 'Safe',
-    symbol: '□',
-    tone: 'green'
-  }
-]
-
+const brands: Brand[] =
+  KNOWLEDGE_ITEMS.map(item => ({
+    type: item.type,
+    label: item.label,
+    symbol: item.symbol,
+    tone: item.tone
+  }))
 
 // --------------------------------------------------
 // BOARD GEOMETRY
-//
-// Це тільки координати.
-// Типів SOL / BONK / etc тут спеціально немає.
-//
-// Генератор сам визначить, які позиції повинні
-// утворювати пару, щоб поле можна було пройти.
 // --------------------------------------------------
 
 const rawPositions: Array<
@@ -249,7 +108,6 @@ const rawPositions: Array<
   [6, 10, 0],
   [8, 10, 0],
 
-
   // SECOND LAYER
 
   [3, 5, 1],
@@ -270,7 +128,6 @@ const rawPositions: Array<
   [7, 7, 1],
   [9, 7, 1],
 
-
   // TOP LAYER
 
   [6, 4, 2],
@@ -286,7 +143,6 @@ const rawPositions: Array<
   [11, 6, 2]
 ]
 
-
 const boardPositions: BoardPosition[] =
   rawPositions.map(
     ([x, y, z], index) => ({
@@ -296,7 +152,6 @@ const boardPositions: BoardPosition[] =
       z
     })
   )
-
 
 // --------------------------------------------------
 // RANDOM
@@ -318,19 +173,17 @@ function shuffleArray<T>(
         (index + 1)
       )
 
-    const temporary =
-      result[index]
-
-    result[index] =
+    ;[
+      result[index],
       result[randomIndex]
-
-    result[randomIndex] =
-      temporary
+    ] = [
+      result[randomIndex],
+      result[index]
+    ]
   }
 
   return result
 }
-
 
 // --------------------------------------------------
 // GEOMETRY
@@ -340,40 +193,13 @@ function rectanglesOverlap(
   first: BoardPosition,
   second: BoardPosition
 ): boolean {
-  const firstLeft =
-    first.x
-
-  const firstRight =
-    first.x + 2
-
-  const firstTop =
-    first.y
-
-  const firstBottom =
-    first.y + 2
-
-
-  const secondLeft =
-    second.x
-
-  const secondRight =
-    second.x + 2
-
-  const secondTop =
-    second.y
-
-  const secondBottom =
-    second.y + 2
-
-
   return (
-    firstLeft < secondRight &&
-    firstRight > secondLeft &&
-    firstTop < secondBottom &&
-    firstBottom > secondTop
+    first.x < second.x + 2 &&
+    first.x + 2 > second.x &&
+    first.y < second.y + 2 &&
+    first.y + 2 > second.y
   )
 }
-
 
 function verticalOverlap(
   first: BoardPosition,
@@ -385,17 +211,10 @@ function verticalOverlap(
   )
 }
 
-
-// --------------------------------------------------
-// CHECK IF POSITION IS FREE
-// --------------------------------------------------
-
 function isPositionFree(
   tile: BoardPosition,
   activeTiles: BoardPosition[]
 ): boolean {
-  // Плитка зверху перекриває цю плитку.
-
   const hasTileAbove =
     activeTiles.some(other =>
       other.id !== tile.id &&
@@ -410,9 +229,6 @@ function isPositionFree(
     return false
   }
 
-
-  // Перевіряємо ліву сторону.
-
   const blockedOnLeft =
     activeTiles.some(other =>
       other.id !== tile.id &&
@@ -423,9 +239,6 @@ function isPositionFree(
         other
       )
     )
-
-
-  // Перевіряємо праву сторону.
 
   const blockedOnRight =
     activeTiles.some(other =>
@@ -438,45 +251,48 @@ function isPositionFree(
       )
     )
 
-
-  // Mahjong:
-  // плитка доступна, якщо хоча б одна сторона вільна.
-
   return (
     !blockedOnLeft ||
     !blockedOnRight
   )
 }
 
-
 // --------------------------------------------------
-// GUARANTEED SOLUTION GENERATOR
-//
-// Спочатку ми вирішуємо ПУСТУ геометрію.
-//
-// Тобто визначаємо:
-// "які дві позиції можна прибрати першими?",
-// потім наступні дві,
-// і так поки поле не стане пустим.
-//
-// Потім тільки роздаємо бренди цим парам.
+// SOLVABLE BOARD GENERATOR
 // --------------------------------------------------
 
 function findRemovalPlan(
   sourcePositions: BoardPosition[]
 ): RemovalPair[] | null {
-  const remaining =
-    sourcePositions.map(
-      position => ({
-        ...position
-      })
-    )
+  const failedStates =
+    new Set<string>()
 
-  const plan: RemovalPair[] = []
+  function solve(
+    remaining: BoardPosition[]
+  ): RemovalPair[] | null {
+    if (
+      remaining.length === 0
+    ) {
+      return []
+    }
 
-  while (
-    remaining.length > 0
-  ) {
+    const stateKey =
+      remaining
+        .map(tile => tile.id)
+        .sort(
+          (a, b) =>
+            a - b
+        )
+        .join(',')
+
+    if (
+      failedStates.has(
+        stateKey
+      )
+    ) {
+      return null
+    }
+
     const freeTiles =
       remaining.filter(tile =>
         isPositionFree(
@@ -485,72 +301,118 @@ function findRemovalPlan(
         )
       )
 
-    // Якщо залишились плитки,
-    // але нема хоча б двох доступних —
-    // сама геометрія неправильна.
-
     if (
       freeTiles.length < 2
     ) {
+      failedStates.add(
+        stateKey
+      )
+
       return null
     }
 
+    const candidates:
+      Array<{
+        first: BoardPosition
+        second: BoardPosition
+        distance: number
+      }> = []
 
-    const first =
-      freeTiles[0]
-
-    const second =
-      freeTiles[1]
-
-
-    plan.push([
-      first.id,
-      second.id
-    ])
-
-
-    const firstIndex =
-      remaining.findIndex(
-        tile =>
-          tile.id === first.id
-      )
-
-    if (
-      firstIndex !== -1
+    for (
+      let firstIndex = 0;
+      firstIndex <
+      freeTiles.length;
+      firstIndex++
     ) {
-      remaining.splice(
-        firstIndex,
-        1
-      )
+      for (
+        let secondIndex =
+          firstIndex + 1;
+        secondIndex <
+        freeTiles.length;
+        secondIndex++
+      ) {
+        const first =
+          freeTiles[firstIndex]
+
+        const second =
+          freeTiles[secondIndex]
+
+        candidates.push({
+          first,
+          second,
+
+          distance:
+            Math.abs(
+              first.x -
+              second.x
+            ) +
+            Math.abs(
+              first.y -
+              second.y
+            ) +
+            Math.abs(
+              first.z -
+              second.z
+            ) * 2
+        })
+      }
     }
 
+    candidates.sort(
+      (a, b) =>
+        b.distance -
+        a.distance
+    )
 
-    const secondIndex =
-      remaining.findIndex(
-        tile =>
-          tile.id === second.id
-      )
-
-    if (
-      secondIndex !== -1
+    for (
+      const candidate
+      of candidates
     ) {
-      remaining.splice(
-        secondIndex,
-        1
-      )
+      const next =
+        remaining.filter(tile =>
+          tile.id !==
+            candidate.first.id &&
+          tile.id !==
+            candidate.second.id
+        )
+
+      const rest =
+        solve(next)
+
+      if (rest) {
+        return [
+          [
+            candidate.first.id,
+            candidate.second.id
+          ],
+          ...rest
+        ]
+      }
     }
+
+    failedStates.add(
+      stateKey
+    )
+
+    return null
   }
 
-  return plan
+  return solve(
+    sourcePositions.map(
+      position => ({
+        ...position
+      })
+    )
+  )
 }
 
-
 // --------------------------------------------------
-// ASSIGN BRANDS TO A GUARANTEED REMOVAL PLAN
+// ASSIGN TILE THEMES
 // --------------------------------------------------
 
 function createBrandMap(
-  positions: BoardPosition[]
+  positions: BoardPosition[],
+  brandPool: Brand[] = brands
 ): Map<number, Brand> {
   const solution =
     findRemovalPlan(
@@ -563,28 +425,25 @@ function createBrandMap(
     )
   }
 
-
   if (
     solution.length >
-    brands.length
+    brandPool.length
   ) {
     throw new Error(
-      'Not enough brands for the number of tile pairs.'
+      'Not enough knowledge items for this board.'
     )
   }
 
-
   const randomizedBrands =
-    shuffleArray(brands)
-      .slice(
-        0,
-        solution.length
-      )
-
+    shuffleArray(
+      brandPool
+    ).slice(
+      0,
+      solution.length
+    )
 
   const result =
     new Map<number, Brand>()
-
 
   solution.forEach(
     (
@@ -606,13 +465,11 @@ function createBrandMap(
     }
   )
 
-
   return result
 }
 
-
 // --------------------------------------------------
-// CREATE NEW GAME
+// CREATE GAME
 // --------------------------------------------------
 
 function createInitialTiles():
@@ -621,7 +478,6 @@ function createInitialTiles():
     createBrandMap(
       boardPositions
     )
-
 
   return boardPositions.map(
     position => {
@@ -632,10 +488,9 @@ function createInitialTiles():
 
       if (!brand) {
         throw new Error(
-          `Missing brand for tile ${position.id}`
+          `Missing data for tile ${position.id}`
         )
       }
-
 
       return {
         id: position.id,
@@ -655,7 +510,6 @@ function createInitialTiles():
   )
 }
 
-
 // --------------------------------------------------
 // STATE
 // --------------------------------------------------
@@ -670,6 +524,14 @@ const selectedTileIds =
 
 const hintedTileIds =
   ref<number[]>([])
+
+const discoveredTypes =
+  ref<string[]>([])
+
+const activeKnowledge =
+  ref<KnowledgeItem | null>(
+    null
+  )
 
 const score =
   ref(0)
@@ -695,7 +557,6 @@ const reducedMotion =
 const boardLocked =
   ref(false)
 
-
 let timerId:
   number | undefined
 
@@ -705,6 +566,8 @@ let selectionTimeoutId:
 let hintTimeoutId:
   number | undefined
 
+let knowledgeTimeoutId:
+  number | undefined
 
 // --------------------------------------------------
 // COMPUTED
@@ -718,24 +581,27 @@ const activeTiles =
     )
   )
 
-
 const pairsLeft =
   computed(() =>
-    activeTiles.value.length / 2
+    activeTiles.value.length /
+    2
   )
-
 
 const isCompleted =
   computed(() =>
-    activeTiles.value.length === 0
+    activeTiles.value.length ===
+    0
   )
-
 
 const canUndo =
   computed(() =>
     history.value.length > 0
   )
 
+const discoveredCount =
+  computed(() =>
+    discoveredTypes.value.length
+  )
 
 const formattedTime =
   computed(() => {
@@ -748,7 +614,6 @@ const formattedTime =
     const seconds =
       elapsedSeconds.value %
       60
-
 
     return `${
       String(minutes)
@@ -765,9 +630,8 @@ const formattedTime =
     }`
   })
 
-
 // --------------------------------------------------
-// CURRENT GAME FREE CHECK
+// CURRENT FREE CHECK
 // --------------------------------------------------
 
 function isTileFree(
@@ -778,7 +642,6 @@ function isTileFree(
   ) {
     return false
   }
-
 
   const positions:
     BoardPosition[] =
@@ -798,7 +661,6 @@ function isTileFree(
       })
     )
 
-
   return isPositionFree(
     {
       id: tile.id,
@@ -810,9 +672,8 @@ function isTileFree(
   )
 }
 
-
 // --------------------------------------------------
-// STYLE POSITION
+// TILE POSITION
 // --------------------------------------------------
 
 function getTileStyle(
@@ -838,7 +699,6 @@ function getTileStyle(
   }
 }
 
-
 // --------------------------------------------------
 // TIMERS
 // --------------------------------------------------
@@ -857,7 +717,6 @@ function clearSelectionTimer() {
   }
 }
 
-
 function clearHintTimer() {
   if (
     hintTimeoutId !==
@@ -872,6 +731,71 @@ function clearHintTimer() {
   }
 }
 
+function clearKnowledgeTimer() {
+  if (
+    knowledgeTimeoutId !==
+    undefined
+  ) {
+    window.clearTimeout(
+      knowledgeTimeoutId
+    )
+
+    knowledgeTimeoutId =
+      undefined
+  }
+}
+
+// --------------------------------------------------
+// KNOWLEDGE
+// --------------------------------------------------
+
+function closeKnowledge() {
+  clearKnowledgeTimer()
+
+  activeKnowledge.value =
+    null
+}
+
+function discoverTile(
+  type: string
+) {
+  const knowledge =
+    KNOWLEDGE_BY_TYPE[type]
+
+  if (!knowledge) {
+    return
+  }
+
+  if (
+    discoveredTypes.value.includes(
+      type
+    )
+  ) {
+    return
+  }
+
+  discoveredTypes.value = [
+    ...discoveredTypes.value,
+    type
+  ]
+
+  activeKnowledge.value =
+    knowledge
+
+  clearKnowledgeTimer()
+
+  knowledgeTimeoutId =
+    window.setTimeout(
+      () => {
+        activeKnowledge.value =
+          null
+
+        knowledgeTimeoutId =
+          undefined
+      },
+      6500
+    )
+}
 
 // --------------------------------------------------
 // SELECT TILE
@@ -887,32 +811,26 @@ function selectTile(
     return
   }
 
-
-  // Натиснули вдруге на ту саму плитку.
-
   if (
     selectedTileIds.value.includes(
       tile.id
     )
   ) {
-    selectedTileIds.value = []
+    selectedTileIds.value =
+      []
 
     return
   }
-
-
-  // Перша плитка.
 
   if (
-    selectedTileIds.value.length === 0
+    selectedTileIds.value.length ===
+    0
   ) {
-    selectedTileIds.value = [
-      tile.id
-    ]
+    selectedTileIds.value =
+      [tile.id]
 
     return
   }
-
 
   const firstTile =
     tiles.value.find(
@@ -921,35 +839,28 @@ function selectTile(
         selectedTileIds.value[0]
     )
 
-
   if (!firstTile) {
-    selectedTileIds.value = []
+    selectedTileIds.value =
+      []
 
     return
   }
-
 
   selectedTileIds.value = [
     firstTile.id,
     tile.id
   ]
 
-
   boardLocked.value =
     true
 
-
-  // ------------------------------------------------
   // MATCH
-  // ------------------------------------------------
-
   if (
     firstTile.type ===
     tile.type
   ) {
     const scoreBefore =
       score.value
-
 
     selectionTimeoutId =
       window.setTimeout(
@@ -963,17 +874,18 @@ function selectTile(
             scoreBefore
           })
 
-
           firstTile.removed =
             true
 
           tile.removed =
             true
 
-
           score.value +=
             100
 
+          discoverTile(
+            firstTile.type
+          )
 
           selectedTileIds.value =
             []
@@ -981,22 +893,16 @@ function selectTile(
           hintedTileIds.value =
             []
 
-
           boardLocked.value =
             false
         },
         180
       )
 
-
     return
   }
 
-
-  // ------------------------------------------------
   // WRONG PAIR
-  // ------------------------------------------------
-
   selectionTimeoutId =
     window.setTimeout(
       () => {
@@ -1010,7 +916,6 @@ function selectTile(
     )
 }
 
-
 // --------------------------------------------------
 // FIND AVAILABLE MATCH
 // --------------------------------------------------
@@ -1023,7 +928,6 @@ function findFreePair():
         !tile.removed &&
         isTileFree(tile)
     )
-
 
   for (
     let firstIndex = 0;
@@ -1046,7 +950,6 @@ function findFreePair():
       const second =
         freeTiles[secondIndex]
 
-
       if (
         first.type ===
         second.type
@@ -1059,10 +962,8 @@ function findFreePair():
     }
   }
 
-
   return null
 }
-
 
 // --------------------------------------------------
 // HINT
@@ -1071,56 +972,43 @@ function findFreePair():
 function useHint() {
   if (
     hintsLeft.value <= 0 ||
-    isCompleted.value
+    isCompleted.value ||
+    boardLocked.value
   ) {
     return
   }
 
-
   const pair =
     findFreePair()
-
-
-  // З нормальною генерацією сюди
-  // практично не повинні потрапляти.
 
   if (!pair) {
     return
   }
 
-
   clearHintTimer()
-
 
   hintedTileIds.value = [
     pair[0].id,
     pair[1].id
   ]
 
-
   hintsLeft.value--
-
 
   hintTimeoutId =
     window.setTimeout(
       () => {
         hintedTileIds.value =
           []
+
+        hintTimeoutId =
+          undefined
       },
       1600
     )
 }
 
-
 // --------------------------------------------------
-// GUARANTEED SHUFFLE
-//
-// Тут ми НЕ перемішуємо типи просто випадково.
-//
-// Спочатку знаходимо новий guaranteed removal plan
-// для плиток, які ще залишилися.
-//
-// Потім роздаємо бренди по ньому.
+// SHUFFLE
 // --------------------------------------------------
 
 function shuffleTiles() {
@@ -1132,56 +1020,59 @@ function shuffleTiles() {
     return
   }
 
+  closeKnowledge()
+
+  const remainingTiles =
+    tiles.value.filter(
+      tile =>
+        !tile.removed
+    )
 
   const remainingPositions:
     BoardPosition[] =
-    tiles.value
-      .filter(
+    remainingTiles.map(
+      tile => ({
+        id: tile.id,
+        x: tile.x,
+        y: tile.y,
+        z: tile.z
+      })
+    )
+
+  const remainingTypes =
+    new Set(
+      remainingTiles.map(
         tile =>
-          !tile.removed
+          tile.type
       )
-      .map(
-        tile => ({
-          id:
-            tile.id,
+    )
 
-          x:
-            tile.x,
-
-          y:
-            tile.y,
-
-          z:
-            tile.z
-        })
-      )
-
+  const remainingBrands =
+    brands.filter(
+      brand =>
+        remainingTypes.has(
+          brand.type
+        )
+    )
 
   const newBrandMap =
     createBrandMap(
-      remainingPositions
+      remainingPositions,
+      remainingBrands
     )
 
-
-  tiles.value.forEach(
+  remainingTiles.forEach(
     tile => {
-      if (
-        tile.removed
-      ) {
-        return
-      }
-
-
       const brand =
         newBrandMap.get(
           tile.id
         )
 
-
       if (!brand) {
-        return
+        throw new Error(
+          `Missing shuffled data for tile ${tile.id}`
+        )
       }
-
 
       tile.type =
         brand.type
@@ -1197,41 +1088,39 @@ function shuffleTiles() {
     }
   )
 
-
   selectedTileIds.value =
     []
 
   hintedTileIds.value =
     []
 
-
-  // Undo через shuffle не робимо.
-  // Старі ходи належать старій розкладці.
-
+  // Undo старої розкладки
+  // після shuffle вже не валідний.
   history.value =
     []
 
-
   shufflesLeft.value--
 }
-
 
 // --------------------------------------------------
 // UNDO
 // --------------------------------------------------
 
 function undoLastMove() {
+  if (
+    boardLocked.value
+  ) {
+    return
+  }
+
   const last =
     history.value.pop()
-
 
   if (!last) {
     return
   }
 
-
   clearSelectionTimer()
-
 
   last.tileIds.forEach(
     id => {
@@ -1241,7 +1130,6 @@ function undoLastMove() {
             item.id === id
         )
 
-
       if (tile) {
         tile.removed =
           false
@@ -1249,10 +1137,8 @@ function undoLastMove() {
     }
   )
 
-
   score.value =
     last.scoreBefore
-
 
   selectedTileIds.value =
     []
@@ -1263,7 +1149,6 @@ function undoLastMove() {
   boardLocked.value =
     false
 }
-
 
 // --------------------------------------------------
 // RESET
@@ -1272,11 +1157,10 @@ function undoLastMove() {
 function resetGame() {
   clearSelectionTimer()
   clearHintTimer()
-
+  clearKnowledgeTimer()
 
   tiles.value =
     createInitialTiles()
-
 
   selectedTileIds.value =
     []
@@ -1284,6 +1168,11 @@ function resetGame() {
   hintedTileIds.value =
     []
 
+  discoveredTypes.value =
+    []
+
+  activeKnowledge.value =
+    null
 
   score.value =
     0
@@ -1291,17 +1180,14 @@ function resetGame() {
   elapsedSeconds.value =
     0
 
-
   hintsLeft.value =
     3
 
   shufflesLeft.value =
     3
 
-
   history.value =
     []
-
 
   boardLocked.value =
     false
@@ -1309,7 +1195,6 @@ function resetGame() {
   panel.value =
     null
 }
-
 
 // --------------------------------------------------
 // TIMER
@@ -1330,7 +1215,6 @@ onMounted(() => {
     )
 })
 
-
 onBeforeUnmount(() => {
   if (
     timerId !== undefined
@@ -1340,9 +1224,9 @@ onBeforeUnmount(() => {
     )
   }
 
-
   clearSelectionTimer()
   clearHintTimer()
+  clearKnowledgeTimer()
 })
 </script>
 
@@ -1353,8 +1237,13 @@ onBeforeUnmount(() => {
       'reduce-motion': reducedMotion
     }"
   >
-    <div class="background-orb orb-one"></div>
-    <div class="background-orb orb-two"></div>
+    <div
+      class="background-orb orb-one"
+    ></div>
+
+    <div
+      class="background-orb orb-two"
+    ></div>
 
     <div class="background-logo">
       <span></span>
@@ -1375,18 +1264,34 @@ onBeforeUnmount(() => {
 
     <main class="game-stage">
       <div class="board-wrapper">
-        <div class="board-glow"></div>
+        <div
+          class="board-glow"
+        ></div>
 
         <div class="board">
           <Tile
             v-for="tile in tiles"
             :key="tile.id"
             :tile="tile"
-            :selected="selectedTileIds.includes(tile.id)"
-            :hinted="hintedTileIds.includes(tile.id)"
-            :free="isTileFree(tile)"
-            :style="getTileStyle(tile)"
-            @select="selectTile(tile)"
+            :selected="
+              selectedTileIds.includes(
+                tile.id
+              )
+            "
+            :hinted="
+              hintedTileIds.includes(
+                tile.id
+              )
+            "
+            :free="
+              isTileFree(tile)
+            "
+            :style="
+              getTileStyle(tile)
+            "
+            @select="
+              selectTile(tile)
+            "
           />
         </div>
 
@@ -1394,26 +1299,43 @@ onBeforeUnmount(() => {
           v-if="isCompleted"
           class="complete-overlay"
         >
-          <div class="complete-card">
-            <div class="complete-icon">
+          <div
+            class="complete-card"
+          >
+            <div
+              class="complete-icon"
+            >
               🏆
             </div>
 
+            <div class="complete-label">
+              LEVEL COMPLETE
+            </div>
+
             <h2>
-              Board Complete
+              Board cleared
             </h2>
 
             <p>
-              Score:
+              Score
               <strong>
                 {{ score }}
               </strong>
             </p>
 
             <p>
-              Time:
+              Time
               <strong>
                 {{ formattedTime }}
+              </strong>
+            </p>
+
+            <p>
+              Discoveries
+              <strong>
+                {{ discoveredCount }}
+                /
+                {{ KNOWLEDGE_TOTAL }}
               </strong>
             </p>
 
@@ -1428,56 +1350,99 @@ onBeforeUnmount(() => {
       </div>
     </main>
 
+    <div
+      class="discovery-counter"
+    >
+      <span class="discovery-dot">
+      </span>
+
+      <span>
+        Discoveries
+      </span>
+
+      <strong>
+        {{ discoveredCount }}
+        /
+        {{ KNOWLEDGE_TOTAL }}
+      </strong>
+    </div>
+
     <BottomBar
       :score="score"
       :can-undo="canUndo"
       @undo="undoLastMove"
     />
 
+    <KnowledgeCard
+      v-if="activeKnowledge"
+      :item="activeKnowledge"
+      :discovered="discoveredCount"
+      :total="KNOWLEDGE_TOTAL"
+      @close="closeKnowledge"
+    />
+
     <div
       v-if="panel"
       class="modal-backdrop"
-      @click.self="panel = null"
+      @click.self="
+        panel = null
+      "
     >
       <div class="modal">
         <button
           class="modal-close"
           type="button"
-          @click="panel = null"
+          @click="
+            panel = null
+          "
         >
-          ×
+          
         </button>
 
-        <template v-if="panel === 'menu'">
+        <template
+          v-if="
+            panel === 'menu'
+          "
+        >
           <h2>
-            Solana Mahjong
+            Solong
           </h2>
 
           <p>
-            Match two identical free tiles to clear the board.
+            Match free pairs,
+            discover Solana concepts
+            and clear the board.
           </p>
 
           <div class="rules">
             <div>
               <span>01</span>
-              A tile cannot have another tile covering it.
+
+              A tile cannot be covered
+              by another tile.
             </div>
 
             <div>
               <span>02</span>
-              At least one side must be open.
+
+              At least one side of the
+              tile must be open.
             </div>
 
             <div>
               <span>03</span>
-              Match identical Web3 tiles.
+
+              Match identical tiles
+              to unlock knowledge cards.
             </div>
           </div>
 
           <button
             class="primary-button"
             type="button"
-            @click="panel = null"
+            @click="
+              panel = null
+            "
           >
             Continue
           </button>
@@ -1496,19 +1461,24 @@ onBeforeUnmount(() => {
             Settings
           </h2>
 
-          <label class="setting-row">
+          <label
+            class="setting-row"
+          >
             <div>
               <strong>
                 Reduce motion
               </strong>
 
               <small>
-                Disable most tile animations.
+                Disable most tile
+                animations.
               </small>
             </div>
 
             <input
-              v-model="reducedMotion"
+              v-model="
+                reducedMotion
+              "
               type="checkbox"
             />
           </label>
@@ -1516,7 +1486,9 @@ onBeforeUnmount(() => {
           <button
             class="primary-button"
             type="button"
-            @click="panel = null"
+            @click="
+              panel = null
+            "
           >
             Done
           </button>
@@ -1540,24 +1512,43 @@ onBeforeUnmount(() => {
   flex-direction: column;
 
   padding:
-    clamp(14px, 2vw, 28px);
+    clamp(
+      14px,
+      2vw,
+      28px
+    );
 
   color: #fff;
 
   background:
     radial-gradient(
       circle at 50% 42%,
-      rgba(55, 20, 125, 0.42),
+      rgba(
+        55,
+        20,
+        125,
+        0.42
+      ),
       transparent 35%
     ),
     radial-gradient(
       circle at 86% 55%,
-      rgba(20, 241, 149, 0.11),
+      rgba(
+        20,
+        241,
+        149,
+        0.11
+      ),
       transparent 24%
     ),
     radial-gradient(
       circle at 12% 80%,
-      rgba(153, 69, 255, 0.15),
+      rgba(
+        153,
+        69,
+        255,
+        0.15
+      ),
       transparent 28%
     ),
     linear-gradient(
@@ -1580,12 +1571,18 @@ onBeforeUnmount(() => {
 
   background-image:
     radial-gradient(
-      rgba(255, 255, 255, 0.4)
+      rgba(
+        255,
+        255,
+        255,
+        0.4
+      )
       0.6px,
       transparent 0.6px
     );
 
-  background-size: 28px 28px;
+  background-size:
+    28px 28px;
 
   mask-image:
     linear-gradient(
@@ -1616,7 +1613,12 @@ onBeforeUnmount(() => {
   top: 28%;
 
   background:
-    rgba(102, 42, 255, 0.18);
+    rgba(
+      102,
+      42,
+      255,
+      0.18
+    );
 }
 
 .orb-two {
@@ -1627,7 +1629,12 @@ onBeforeUnmount(() => {
   top: 35%;
 
   background:
-    rgba(20, 241, 149, 0.08);
+    rgba(
+      20,
+      241,
+      149,
+      0.08
+    );
 }
 
 .background-logo {
@@ -1636,11 +1643,12 @@ onBeforeUnmount(() => {
   right: 4%;
   top: 32%;
 
-  width: clamp(
-    90px,
-    12vw,
-    170px
-  );
+  width:
+    clamp(
+      90px,
+      12vw,
+      170px
+    );
 
   opacity: 0.09;
 
@@ -1690,13 +1698,15 @@ onBeforeUnmount(() => {
 .board {
   position: relative;
 
-  width: min(
-    92vw,
-    840px,
-    calc(
-      (100dvh - 190px) * 1.34
-    )
-  );
+  width:
+    min(
+      92vw,
+      840px,
+      calc(
+        (100dvh - 190px) *
+        1.34
+      )
+    );
 
   aspect-ratio: 1.34;
 
@@ -1713,12 +1723,20 @@ onBeforeUnmount(() => {
   top: 52%;
 
   transform:
-    translate(-50%, -50%);
+    translate(
+      -50%,
+      -50%
+    );
 
   border-radius: 50%;
 
   background:
-    rgba(90, 33, 180, 0.24);
+    rgba(
+      90,
+      33,
+      180,
+      0.24
+    );
 
   filter: blur(70px);
 
@@ -1726,6 +1744,98 @@ onBeforeUnmount(() => {
 
   pointer-events: none;
 }
+
+/* ---------------------------
+   DISCOVERY COUNTER
+--------------------------- */
+
+.discovery-counter {
+  position: absolute;
+
+  left: 50%;
+
+  bottom:
+    clamp(
+      17px,
+      2vw,
+      28px
+    );
+
+  z-index: 90;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    9px 14px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.09
+    );
+
+  border-radius: 999px;
+
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.52
+    );
+
+  background:
+    rgba(
+      5,
+      6,
+      22,
+      0.74
+    );
+
+  backdrop-filter:
+    blur(14px);
+
+  font-size: 10px;
+
+  pointer-events: none;
+}
+
+.discovery-counter strong {
+  color: #14f195;
+
+  font-size: 11px;
+}
+
+.discovery-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #14f195;
+
+  box-shadow:
+    0 0 10px
+    rgba(
+      20,
+      241,
+      149,
+      0.75
+    );
+}
+
+/* ---------------------------
+   COMPLETE
+--------------------------- */
 
 .complete-overlay {
   position: absolute;
@@ -1739,16 +1849,23 @@ onBeforeUnmount(() => {
   border-radius: 30px;
 
   background:
-    rgba(5, 6, 22, 0.68);
+    rgba(
+      5,
+      6,
+      22,
+      0.72
+    );
 
-  backdrop-filter: blur(10px);
+  backdrop-filter:
+    blur(12px);
 }
 
 .complete-card {
-  width: min(
-    90%,
-    330px
-  );
+  width:
+    min(
+      90%,
+      340px
+    );
 
   padding: 32px;
 
@@ -1756,36 +1873,88 @@ onBeforeUnmount(() => {
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.14);
+    rgba(
+      255,
+      255,
+      255,
+      0.14
+    );
 
   border-radius: 22px;
 
   background:
     linear-gradient(
       160deg,
-      rgba(25, 23, 56, 0.97),
-      rgba(8, 9, 28, 0.97)
+      rgba(
+        25,
+        23,
+        56,
+        0.98
+      ),
+      rgba(
+        8,
+        9,
+        28,
+        0.98
+      )
     );
 
   box-shadow:
     0 25px 60px
-    rgba(0, 0, 0, 0.5);
+    rgba(
+      0,
+      0,
+      0,
+      0.5
+    );
 }
 
 .complete-icon {
   font-size: 42px;
 }
 
+.complete-label {
+  margin-top: 8px;
+
+  color: #14f195;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.16em;
+}
+
 .complete-card h2 {
   margin:
-    12px 0 18px;
+    8px 0 20px;
+
+  font-size: 26px;
 }
 
 .complete-card p {
-  margin: 7px 0;
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  gap: 20px;
+
+  margin:
+    8px 0;
 
   color:
-    rgba(255, 255, 255, 0.75);
+    rgba(
+      255,
+      255,
+      255,
+      0.58
+    );
+
+  font-size: 13px;
+}
+
+.complete-card p strong {
+  color: #fff;
 }
 
 .complete-card button {
@@ -1811,6 +1980,10 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+/* ---------------------------
+   MODAL
+--------------------------- */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1823,16 +1996,23 @@ onBeforeUnmount(() => {
   padding: 20px;
 
   background:
-    rgba(2, 3, 14, 0.72);
+    rgba(
+      2,
+      3,
+      14,
+      0.72
+    );
 
-  backdrop-filter: blur(12px);
+  backdrop-filter:
+    blur(12px);
 }
 
 .modal {
-  width: min(
-    100%,
-    420px
-  );
+  width:
+    min(
+      100%,
+      420px
+    );
 
   position: relative;
 
@@ -1840,31 +2020,57 @@ onBeforeUnmount(() => {
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.14);
+    rgba(
+      255,
+      255,
+      255,
+      0.14
+    );
 
   border-radius: 24px;
 
   background:
     linear-gradient(
       145deg,
-      rgba(27, 23, 61, 0.98),
-      rgba(8, 9, 28, 0.98)
+      rgba(
+        27,
+        23,
+        61,
+        0.98
+      ),
+      rgba(
+        8,
+        9,
+        28,
+        0.98
+      )
     );
 
   box-shadow:
     0 28px 80px
-    rgba(0, 0, 0, 0.55);
+    rgba(
+      0,
+      0,
+      0,
+      0.55
+    );
 }
 
 .modal h2 {
-  margin: 0 0 10px;
+  margin:
+    0 0 10px;
 
   font-size: 27px;
 }
 
 .modal p {
   color:
-    rgba(255, 255, 255, 0.68);
+    rgba(
+      255,
+      255,
+      255,
+      0.68
+    );
 
   line-height: 1.55;
 }
@@ -1877,10 +2083,16 @@ onBeforeUnmount(() => {
 
   border: 0;
 
-  background: transparent;
+  background:
+    transparent;
 
   color:
-    rgba(255, 255, 255, 0.65);
+    rgba(
+      255,
+      255,
+      255,
+      0.65
+    );
 
   font-size: 30px;
 
@@ -1892,7 +2104,8 @@ onBeforeUnmount(() => {
 
   gap: 10px;
 
-  margin: 24px 0;
+  margin:
+    24px 0;
 }
 
 .rules div {
@@ -1906,10 +2119,20 @@ onBeforeUnmount(() => {
   border-radius: 12px;
 
   background:
-    rgba(255, 255, 255, 0.05);
+    rgba(
+      255,
+      255,
+      255,
+      0.05
+    );
 
   color:
-    rgba(255, 255, 255, 0.76);
+    rgba(
+      255,
+      255,
+      255,
+      0.76
+    );
 
   font-size: 14px;
 }
@@ -1951,10 +2174,20 @@ onBeforeUnmount(() => {
 .secondary-button {
   border:
     1px solid
-    rgba(255, 255, 255, 0.13);
+    rgba(
+      255,
+      255,
+      255,
+      0.13
+    );
 
   background:
-    rgba(255, 255, 255, 0.05);
+    rgba(
+      255,
+      255,
+      255,
+      0.05
+    );
 
   color: #fff;
 }
@@ -1962,7 +2195,9 @@ onBeforeUnmount(() => {
 .setting-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
 
   gap: 20px;
 
@@ -1974,7 +2209,12 @@ onBeforeUnmount(() => {
   border-radius: 14px;
 
   background:
-    rgba(255, 255, 255, 0.05);
+    rgba(
+      255,
+      255,
+      255,
+      0.05
+    );
 }
 
 .setting-row div {
@@ -1986,7 +2226,12 @@ onBeforeUnmount(() => {
 
 .setting-row small {
   color:
-    rgba(255, 255, 255, 0.55);
+    rgba(
+      255,
+      255,
+      255,
+      0.55
+    );
 }
 
 .setting-row input {
@@ -1996,31 +2241,54 @@ onBeforeUnmount(() => {
   accent-color: #14f195;
 }
 
-:global(.reduce-motion .tile) {
-  transition: none !important;
+:global(
+  .reduce-motion .tile
+) {
+  transition:
+    none !important;
 }
 
 :global(
   .reduce-motion
   .tile.hinted
 ) {
-  animation: none !important;
+  animation:
+    none !important;
 }
 
-@media (max-height: 700px) {
+@media (
+  max-width: 700px
+) {
+  .discovery-counter {
+    bottom: 13px;
+
+    padding:
+      7px 10px;
+  }
+}
+
+@media (
+  max-height: 700px
+) {
   .game-shell {
     padding:
       10px 16px;
   }
 
   .board {
-    width: min(
-      84vw,
-      720px,
-      calc(
-        (100dvh - 155px) * 1.34
-      )
-    );
+    width:
+      min(
+        84vw,
+        720px,
+        calc(
+          (100dvh - 155px) *
+          1.34
+        )
+      );
+  }
+
+  .discovery-counter {
+    bottom: 8px;
   }
 }
 </style>

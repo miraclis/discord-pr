@@ -24,6 +24,10 @@ export interface GameTile {
 }
 
 export interface MatchHistoryEntry {
-  tileIds: [number, number]
+  tileIds: [
+    number,
+    number
+  ]
+
   scoreBefore: number
 }
