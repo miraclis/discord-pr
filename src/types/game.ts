@@ -1,24 +1,26 @@
-export type TileType =
-  | 'SOL'
-  | 'JUP'
-  | 'BONK'
-  | 'PHANTOM'
-  | 'ORCA'
-  | 'JITO'
-  | 'DRIFT'
-  | 'PYTH'
-  | 'TENSOR'
-  | 'ME'
-  | 'WORM'
-  | 'HELIUS'
+export type TileTone =
+  | 'solana'
+  | 'purple'
+  | 'teal'
+  | 'gold'
+  | 'pink'
+  | 'blue'
+  | 'green'
+  | 'orange'
 
 export interface GameTile {
   id: number
-  type: TileType
-  removed: boolean
+  type: string
+
+  label: string
+  symbol: string
+  tone: TileTone
+
   x: number
   y: number
   z: number
+
+  removed: boolean
 }
 
 export interface MatchHistoryEntry {
